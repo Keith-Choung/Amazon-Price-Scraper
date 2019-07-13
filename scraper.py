@@ -1,6 +1,7 @@
 
+# ! reinstall macOS b/c it deleted Python 2.7
 # ! ALERT
-# * BETTER
+# * FUNCTION
 # ? QUESTION
 # COMMENT
 
@@ -8,6 +9,8 @@ from bs4 import BeautifulSoup
 import requests
 import smtplib  # simple mail protocol
 import time
+import datetime
+import csv
 
 URL = 'https://www.amazon.com/Dell-LED-Lit-Monitor-Black-S3219D/dp/B07JVQ8M3Q/ref=sr_1_4?keywords=monitor&qid=1562984199&refinements=p_n_size_browse-bin%3A3547808011%7C3547809011&rnid=2633086011&s=pc&sr=1-4'
 
@@ -19,19 +22,30 @@ def check_price():
     page = requests.get(URL, headers=headers)
 
     # parse everything for us
-    soup = BeautifulSoup(page.content, 'html.parser')
+    soup = BeautifulSoup(page.content, 'html.parser')  # ? clarification
 
     # print(soup.prettify())
 
-    title = soup.find(id="productTitle").get_text()
+    unstripped_title = soup.find(id="productTitle").get_text()
+    title = unstripped_title.strip()
+
+    # make short description to store
+    title_split = title.split()
+    short_desc_split = title_split[0:6]
+    short_desc = " ".join(short_desc_split)
+
     price = soup.find(id="priceblock_ourprice").get_text()
     # takes out '$' and the cents | still a string
     converted_price = float(price[1:4])
 
-    if (converted_price < 1800):
-        send_mail()
+    if (converted_price < 300):
+        date = datetime.date.today()
+        date_str = "{}/{}/{}".format(date.month, date.day, date.year)
 
-    print(title.strip())  # -> prints the title
+        store_data(short_desc, converted_price, date_str)
+        # send_mail()
+
+    print(title)  # -> prints the title
     print(converted_price)
 
 # sends email w updated price
@@ -62,7 +76,20 @@ def send_mail():
     server.quit()
 
 
-# while(True):
-#     check_price()
-#     time.sleep(60 * 60 * 5)  # pauses while loop for a day
+# * stores data: reads in data and stores it into csv file. checks if data is new and updates
+def store_data(Desc, Price, Date):
+    # ! newline='' is not working correctly. might be becuase 'encodings' isn't added
+    with open('site_data.csv', mode='w+') as csvfile:
+        item_data = csv.writer(csvfile, delimiter=',',
+                               quotechar='"', quoting=csv.QUOTE_ALL)
+
+        # OrigPrice =
+        # if (Price < OrigPrice):
+        item_data.writerow([Desc, Price, Date])
+
+
+    # * to keep the program running daily
+    # while(True):
+    #     check_price()
+    #     time.sleep(60 * 60 * 5)  # pauses while loop for a day
 check_price()

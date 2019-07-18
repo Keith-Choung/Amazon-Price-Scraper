@@ -18,13 +18,11 @@ headers = {
     "User-Agnet": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
 
 
-def check_price():
+def main():
     page = requests.get(URL, headers=headers)
 
     # parse everything for us
     soup = BeautifulSoup(page.content, 'html.parser')  # ? clarification
-
-    # print(soup.prettify())
 
     unstripped_title = soup.find(id="productTitle").get_text()
     title = unstripped_title.strip()
@@ -38,7 +36,7 @@ def check_price():
     # takes out '$' and the cents | still a string
     converted_price = float(price[1:4])
 
-    if (converted_price < 300):
+    if (converted_price < 400):
         date = datetime.date.today()
         date_str = "{}/{}/{}".format(date.month, date.day, date.year)
 
@@ -67,7 +65,7 @@ def send_mail():
 
     server.sendmail(
         'keithchoung@gmail.com',  # from
-        'tchennn@umich.edu',  # to
+        'kjchoung@ucdavis.edu',  # to
         msg
     )
 
@@ -75,21 +73,43 @@ def send_mail():
 
     server.quit()
 
+# * check_price: takes in origPrice and index and compares with new price w that index's value
+def check_price(desc, origPrice):
+    price_list = []
+    i = 0
+    p = 0
+    with open('site_data.csv', mode='r') as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        for row in readCSV:
+            price = row[1]
+            price_list.append(float(price))
+            i += 1
+            if (row[0] == desc):
+                p == i  # ? the one time row[0] == desc, p will take that value, once maybe...
+
+    if (origPrice > price_list[p]):
+        return True
+
+    return False
 
 # * stores data: reads in data and stores it into csv file. checks if data is new and updates
 def store_data(Desc, Price, Date):
-    # ! newline='' is not working correctly. might be becuase 'encodings' isn't added
-    with open('site_data.csv', mode='w+') as csvfile:
-        item_data = csv.writer(csvfile, delimiter=',',
-                               quotechar='"', quoting=csv.QUOTE_ALL)
+    origPrice = Price
+    if(check_price(Desc, origPrice)):
+        # after reading, if the price is new, replace that line
+        with open('site_data.csv', mode='w+') as csvfile:
+            item_data = csv.writer(csvfile, delimiter=',',
+                                quotechar='"', quoting=csv.QUOTE_ALL)
 
-        # OrigPrice =
-        # if (Price < OrigPrice):
-        item_data.writerow([Desc, Price, Date])
+            # OrigPrice =
+            # if (Price < OrigPrice):
+            print("went thru open")
+            item_data.writerow([Desc, Price, Date])
 
 
     # * to keep the program running daily
     # while(True):
     #     check_price()
     #     time.sleep(60 * 60 * 5)  # pauses while loop for a day
-check_price()
+
+main()

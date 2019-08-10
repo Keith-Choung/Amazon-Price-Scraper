@@ -35,3 +35,5 @@ TODO:
     - needs to have all of the updated 
 
 - check_price() should tell whether the price went up or down
+
+- test cases

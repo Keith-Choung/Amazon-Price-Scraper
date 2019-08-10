@@ -17,6 +17,12 @@ import csv
        
 headers = {
     "User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
+def get_rows(file):
+    csv_file = csv.reader(open(file ,'r'), delimiter=",")
+    rows = 0
+    for row in csv_file:
+        rows += 1
+    return rows
 
 def get_info(index):
     
@@ -24,6 +30,7 @@ def get_info(index):
     i = 0
     target = ""
     for row in csv_file:
+        print("row: ", row)
         if(index == i):
             target = row
             print("Target:\n" , target)
@@ -31,7 +38,6 @@ def get_info(index):
         else:
             i += 1
             continue
-
     URL = target[1].replace('\"', '')       # need to take out the quotes in the string
     page = requests.get(URL, headers=headers)
 
@@ -64,6 +70,7 @@ def check_price(desc, new_price):
     price_list = []
     i = 0
     p = 0
+    exist = False
     with open('site_data.csv', mode='r') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
@@ -72,10 +79,12 @@ def check_price(desc, new_price):
             i += 1
             if (row[0] == desc):
                 p == i  # ? the one time row[0] == desc, p will take that value, once maybe...
+                exist = True
     print("price_list[p]:", price_list[p])
-    if (new_price < price_list[p]):
+    if (new_price < price_list[p] or not exist):
         print("check_price returned: TRUE\n")
         return True
+    
     print("check_price returned: FALSE\n")
     return False
 
@@ -84,11 +93,11 @@ def check_price(desc, new_price):
 def store_data(Desc, Price, Date):
     print("store_data\n")
     # after reading, if the price is new, replace that line
-    with open('site_data.csv', mode='w+') as csvfile:
+    with open('site_data.csv', mode='a+') as csvfile:
         item_data = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_ALL)
-        print("went thru open")
         item_data.writerow([Desc, Price, Date])
+
 
 
 def send_mail():
@@ -119,13 +128,23 @@ def send_mail():
 
 def main():
     index = 1
-    # get_info(index)
-    title, short_desc, converted_price, date_str = get_info(index)
-    print("\n")
-    print("Title: {}\nshort_desc: {}\nconverted_price: {}\ndate_str: {}\n".format(title, short_desc, converted_price, date_str))
-    if (check_price(short_desc, converted_price)):
-        store_data(short_desc, converted_price, date_str)
+    csv_file = csv.reader(open('items.csv', 'r'), delimiter=',')
+
+    total_rows = get_rows('items.csv')
+
+    for rows in csv_file:
+        print("index:", index)
+        title, short_desc, converted_price, date_str = get_info(index)
+        print("\n")
+        print("Title: {}\nshort_desc: {}\nconverted_price: {}\ndate_str: {}\n".format(title, short_desc, converted_price, date_str))
+        if (check_price(short_desc, converted_price)):
+            store_data(short_desc, converted_price, date_str)
         # send_mail()
+        index += 1
+        if (index == total_rows):
+            break
+    
+    print("EXIT\n")
 
 
 # get_info(1)

@@ -5,6 +5,9 @@ NOTES:
 
 get_info -> check_price -> store_data & send_mail || do nothing
 
+get_rows:
+    gets the total number of rows in the csv file
+
 get_info: 
     gets all information needed for an item, from the items.csv
         - input is row index that needs to be read in.
@@ -25,6 +28,10 @@ store_data: Desc, Price, Date
     
 TODO:
 - add ID column & create ID -> index translator map?
+
 - remove_data: if url returns nothing or DNE anymore
-- while loop so it checks every 12 hrs
-    - look into desktop to have programs running
+
+- send_mail() should be called last
+    - needs to have all of the updated 
+
+- check_price() should tell whether the price went up or down

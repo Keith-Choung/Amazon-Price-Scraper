@@ -25,9 +25,13 @@ store_data: Desc, Price, Date
     1) overwrites if check_price is true
     2) adds if the Desc does not exist yet
     returns bool
+
     
 TODO:
 - add ID column & create ID -> index translator map?
+
+- add_data: returns boolean
+    - calls create_ID()
 
 - remove_data: if url returns nothing or DNE anymore
 
@@ -36,4 +40,13 @@ TODO:
 
 - check_price() should tell whether the price went up or down
 
-- test cases
+- bs4 parsing test cases to ensure they UPDATE and don't add on
+
+test cases
+
+get_row(): returns the row number for the specific desc
+
+create_ID(): if new item, creates an ID
+
+organizing prices via price_list is unsustainable.
+    - will need to sort by ID's

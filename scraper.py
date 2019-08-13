@@ -12,43 +12,47 @@ import smtplib  # simple mail protocol
 import time
 import datetime
 import csv
+import organize
+import pprint
 
 # URL = "https://www.amazon.com/Dell-LED-Lit-Monitor-Black-S3219D/dp/B07JVQ8M3Q/ref=sr_1_4?keywords=monitor&qid=1562984199&refinements=p_n_size_browse-bin%3A3547808011%7C3547809011&rnid=2633086011&s=pc&sr=1-4"
        
 headers = {
     "User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
-def get_rows(file):
-    csv_file = csv.reader(open(file ,'r'), delimiter=",")
-    rows = 0
-    for row in csv_file:
-        rows += 1
-    return rows
 
-def get_info(index):
+def get_info(ID):
     
     csv_file = csv.reader(open('items.csv', 'r'), delimiter=",")
+    next(csv_file) # skips header
     i = 0
     target = ""
+    print("ID", ID)
     for row in csv_file:
-        print("row: ", row)
-        if(index == i):
+        # print("row: ", row)
+        if(ID == int(row[0])):
             target = row
-            print("Target:\n" , target)
+            # print("Target:\n" , target)
             break
         else:
             i += 1
             continue
-    URL = target[1].replace('\"', '')       # need to take out the quotes in the string
+
+    URL = target[2].replace('\"', '')       # need to take out the quotes in the string
     page = requests.get(URL, headers=headers)
-
+ 
     # parse everything for us
-    soup = BeautifulSoup(page.content, 'lxml')  # ! 'lxml' is better parser. amazon's html is messy?
+    # ! 'lxml' is better parser. amazon's html is messy?
+    soup = BeautifulSoup(page.content, 'lxml')
+    #! need to specify tags AND attributes for bs4 to find()
 
-    unstripped_title = soup.find(id="productTitle").get_text()
-    title = unstripped_title.strip()
+    if soup.find("span", {"id": "productTitle"}) == None:
+        unstripped_title = soup.find("h1", {"id": "title"}).get_text()
+    else:
+        unstripped_title = soup.find("span", {"id": "productTitle"}).get_text()
 
+    
     # make short description to store
-    title_split = title.split()
+    title_split = unstripped_title.split()
     short_desc_split = title_split[0:6]
     short_desc = " ".join(short_desc_split)
 
@@ -59,13 +63,10 @@ def get_info(index):
     date = datetime.date.today()
     date_str = "{}/{}/{}".format(date.month, date.day, date.year)
 
-    print(title)  # -> prints the title
-    print(converted_price)
-
-    return title, short_desc, converted_price, date_str
+    return unstripped_title, short_desc, converted_price, date_str
 
 # * check_price: takes in origPrice and index and compares with new price w that index's value
-def check_price(desc, new_price):
+def check_price(ID, new_price):
     print("check_price\n")
     price_list = []
     i = 0
@@ -74,33 +75,38 @@ def check_price(desc, new_price):
     with open('site_data.csv', mode='r') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
-            price = row[1]
+            price = row[2]
             price_list.append(float(price))
             i += 1
-            if (row[0] == desc):
-                p == i  # ? the one time row[0] == desc, p will take that value, once maybe...
+            if (int(row[0]) == ID):
                 exist = True
-    print("price_list[p]:", price_list[p])
-    if (new_price < price_list[p] or not exist):
-        print("check_price returned: TRUE\n")
-        return True
-    
+    print(price_list)
+    print("ID:", ID)
+    if not price_list:
+        print("1check_price returned: TRUE\n")
+        return True, exist
+    elif (not exist or new_price < price_list[ID-1]):
+        exist = True
+        return True, exist
     print("check_price returned: FALSE\n")
-    return False
+    return False, exist
 
 
 # * stores data: reads in data and stores it into csv file. checks if data is new and updates
-def store_data(Desc, Price, Date):
+def store_data(ID, Desc, Price, Date):
     print("store_data\n")
     # after reading, if the price is new, replace that line
     with open('site_data.csv', mode='a+') as csvfile:
         item_data = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_ALL)
-        item_data.writerow([Desc, Price, Date])
+        if organize.checkIDs(ID):
+            item_data.writerow([ID, Desc, Price, Date])
+        else:
+            organize.createID(organize.getIDs('items.csv'))
+        print("STORED DATA")
+    
 
-
-
-def send_mail():
+def send_mail(link):
     print("send_mail\n")
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()  # command sent by email when identifying btwn the 2
@@ -110,7 +116,7 @@ def send_mail():
     server.login('keithchoung@gmail.com', 'kfcwxiosfwykkzhb')
 
     subject = "price fell down!"
-    body = "check the amazon link: https://www.amazon.com/Dell-LED-Lit-Monitor-Black-S3219D/dp/B07JVQ8M3Q/ref=sr_1_4?keywords=monitor&qid=1562984199&refinements=p_n_size_browse-bin%3A3547808011%7C3547809011&rnid=2633086011&s=pc&sr=1-4"
+    body = "check the amazon link: {}".format(link)
 
     msg = "Subject: {}\n\n{}".format(
         subject, body)  # ? why does it need two '\n'
@@ -127,34 +133,22 @@ def send_mail():
 
 
 def main():
-    index = 1
     csv_file = csv.reader(open('items.csv', 'r'), delimiter=',')
-
-    total_rows = get_rows('items.csv')
-
-    for rows in csv_file:
-        print("index:", index)
-        title, short_desc, converted_price, date_str = get_info(index)
-        print("\n")
-        print("Title: {}\nshort_desc: {}\nconverted_price: {}\ndate_str: {}\n".format(title, short_desc, converted_price, date_str))
-        if (check_price(short_desc, converted_price)):
-            store_data(short_desc, converted_price, date_str)
-        # send_mail()
-        index += 1
-        if (index == total_rows):
+    total = organize.total_rows('items.csv')
+    next(csv_file)
+    for row in csv_file:
+        ID = int(row[0])
+        title, short_desc, converted_price, date_str = get_info(ID)
+        # ! get ID to run through checks
+        if (check_price(ID, converted_price)):
+            store_data(ID, short_desc, converted_price, date_str)
+            # print(link)
+            # send_mail(ID, short_desc, converted_price, date, link)
+        if (ID == total):
             break
     
     print("EXIT\n")
 
-
-# get_info(1)
-
-main()
-
-
-
-# * to keep the program running daily
-# while(True):
-#     check_price()
-#     time.sleep(60 * 60 * 5)  # pauses while loop for a day
 # main()
+# print(get_info(1))
+# print(check_price(1, 300))

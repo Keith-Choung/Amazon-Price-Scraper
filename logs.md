@@ -19,3 +19,15 @@
 
 8/13/2019
 - was testing and found that when I ran the test file in terminal, it would also run the scraper.py. Thinking it is because unittest looks for the "main()" function and finds it in both scraper.py and test.py. Should change main in the test.py to "test()".
+
+
+- Today I learned:
+    - there are no switch cases in python (surprisingly) but you can return a dictionary based on value.
+
+8/14/2019
+- implementing switch cases via dictionaries in python
+- realized I can't return dictionaries either so I just used conditional returns
+
+- Today I learned:
+    - you can update a csv row by inputting it with column:value pairs in a dictionary
+    - to PROPERLY update a csv file, you create a tempfile and then move it to that file's destination destination... but does it keep the name?

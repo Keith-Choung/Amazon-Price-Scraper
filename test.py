@@ -34,20 +34,35 @@ class simple_test_cases(unittest.TestCase):
         self.assertEqual(organize.createID(ids1), 2)
         self.assertEqual(organize.createID(ids2), 7)
 
-    # def setUp(self):
-    #     ml = """
-    #     <a id="x">1</a>
-    #     <A id="a">2</a>
-    #     <b id="b">3</a>
-    #     <b href="foo" id="x">4</a>
-    #     <ac width=100>4</ac>"""
-    #     self.soup = BeautifulSoup(ml)
+    def setUp(self):
+        ml = """
+        <h1 id="title" class="a-size-large a-spacing-none">
+            <span id="productTitle" class="a-size-large">
+            "
+                
+                    
+                    
+                
 
-    # def test_bs4(self):
-    #     matching = self.soup('a')
-    #     self.assertEqual(len(matching), 1)
-    #     self.assertEqual(matching[0].name, 'a')
-    #     self.assertEqual(matching, self.soup.findAll('a'))
+                
+                    
+                    
+            Dell S Series Led-Lit Monitor 32" Black (S3219D), QHD 2560 X 1440, 60Hz, 99% sRGB, 16: 9, AMD FreeSync, 2 x 5W Speakers, 2 x HDMI 1.4, DP 1.2, USB 3.0
+                    
+                
+
+                
+                    
+                    
+                
+            "
+            </span>
+            <span id="titleEDPPlaceHolder"></span>
+        </h1>"""
+        self.soup = BeautifulSoup(ml, "lxml")
+
+    def test_bs4(self):
+        matching = self.soup.find("span", {"id":"productTitle"})
         
 if __name__ == '__main__': 
     unittest.main() 

@@ -1,5 +1,4 @@
 
-
 # ! ALERT
 # * FUNCTION
 # ? QUESTION
@@ -9,24 +8,22 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import requests
 import smtplib  # simple mail protocol
-import time
 import datetime
 import csv
 import organize
-import pprint
+from tempfile import NamedTemporaryFile
+import shutil
 
-# URL = "https://www.amazon.com/Dell-LED-Lit-Monitor-Black-S3219D/dp/B07JVQ8M3Q/ref=sr_1_4?keywords=monitor&qid=1562984199&refinements=p_n_size_browse-bin%3A3547808011%7C3547809011&rnid=2633086011&s=pc&sr=1-4"
        
 headers = {
     "User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
 
 def get_info(ID):
-    
     csv_file = csv.reader(open('items.csv', 'r'), delimiter=",")
     next(csv_file) # skips header
     i = 0
     target = ""
-    print("ID", ID)
+    # print("ID", ID)
     for row in csv_file:
         # print("row: ", row)
         if(ID == int(row[0])):
@@ -37,7 +34,7 @@ def get_info(ID):
             i += 1
             continue
 
-    URL = target[2].replace('\"', '')       # need to take out the quotes in the string
+    URL = target[1].replace('\"', '')       # need to take out the quotes in the string
     page = requests.get(URL, headers=headers)
  
     # parse everything for us
@@ -68,42 +65,66 @@ def get_info(ID):
 # * check_price: takes in origPrice and index and compares with new price w that index's value
 def check_price(ID, new_price):
     print("check_price\n")
-    price_list = []
+    orig = []
     i = 0
     p = 0
     exist = False
     with open('site_data.csv', mode='r') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
+        next(readCSV)
         for row in readCSV:
-            price = row[2]
-            price_list.append(float(price))
-            i += 1
             if (int(row[0]) == ID):
                 exist = True
-    print(price_list)
+                orig = row
     print("ID:", ID)
-    if not price_list:
-        print("1check_price returned: TRUE\n")
-        return True, exist
-    elif (not exist or new_price < price_list[ID-1]):
-        exist = True
-        return True, exist
-    print("check_price returned: FALSE\n")
-    return False, exist
-
+    if not exist:
+        print("check_price returned: DNE\n")
+        return 1
+    elif (exist and float(orig[2]) > new_price):
+        print("check_price returned: UPDATE\n")
+        return 2
+    print("check_price returned: N/A\n")
+    return 3
 
 # * stores data: reads in data and stores it into csv file. checks if data is new and updates
 def store_data(ID, Desc, Price, Date):
     print("store_data\n")
-    # after reading, if the price is new, replace that line
+
+    # append
     with open('site_data.csv', mode='a+') as csvfile:
         item_data = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_ALL)
-        if organize.checkIDs(ID):
-            item_data.writerow([ID, Desc, Price, Date])
-        else:
-            organize.createID(organize.getIDs('items.csv'))
+        item_data.writerow([ID, Desc, Price, Date])
+            # if the ID is not found, create a new one and append
+            # new_ID = organize.createID(organize.getIDs('items.csv'))
+            # item_data.writerow([new_ID, Desc, Price, Date])
+        
         print("STORED DATA")
+    
+def update_data(ID, Desc, Price, Date):
+    print("update_data\n")
+
+    tempfile = NamedTemporaryFile(mode='w', delete=False)
+    filename = 'site_data.csv'
+    header = ["ID", "Desc", "Price", "Date"]
+
+    with open(filename, 'r') as csvfile, tempfile:
+        reader = csv.DictReader(csvfile, fieldnames=header)
+        writer = csv.DictWriter(tempfile, fieldnames=header, delimiter=',',
+            quotechar='"', quoting=csv.QUOTE_ALL)
+            
+        next(reader)
+
+        # * print the header
+        writer.writerow({'ID': "ID", 'Desc': "Description", 'Price': "Price", 'Date': "Date"})
+        for row in reader:
+            if int(row['ID']) == ID:
+                # print("updating row:", row[ID])
+                row['Desc'], row['Price'], row['Date'] = Desc, Price, Date
+            row = {'ID': row['ID'], 'Desc': row['Desc'], 'Price': row['Price'], 'Date': row['Date']}
+            writer.writerow(row)
+
+    shutil.move(tempfile.name, 'site_data.csv')
     
 
 def send_mail(link):
@@ -131,24 +152,25 @@ def send_mail(link):
 
     server.quit()
 
-
 def main():
     csv_file = csv.reader(open('items.csv', 'r'), delimiter=',')
     total = organize.total_rows('items.csv')
     next(csv_file)
     for row in csv_file:
+
         ID = int(row[0])
         title, short_desc, converted_price, date_str = get_info(ID)
-        # ! get ID to run through checks
-        if (check_price(ID, converted_price)):
+        switch_case_value = check_price(ID, converted_price)
+
+        if (switch_case_value == 1): # * -> append
             store_data(ID, short_desc, converted_price, date_str)
-            # print(link)
-            # send_mail(ID, short_desc, converted_price, date, link)
-        if (ID == total):
+        elif (switch_case_value == 2): # * -> update
+            update_data(ID,short_desc,converted_price, date_str)
+        else: # * -> continue
+            continue
+        if(ID == total):
             break
     
     print("EXIT\n")
 
-# main()
-# print(get_info(1))
-# print(check_price(1, 300))
+main()

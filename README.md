@@ -28,25 +28,36 @@ store_data: Desc, Price, Date
 
     
 TODO:
-- add ID column & create ID -> index translator map?
+- /\ add ID column & create ID -> index translator map?
 
-- add_data: returns boolean
+- add_link: returns boolean
     - calls create_ID()
 
+- check_link: checks if link is valid
+    - if not, return false and cancel add_link
+
 - remove_data: if url returns nothing or DNE anymore
+    - should remove from both 'items.csv' and 'site_data.csv'
 
 - send_mail() should be called last
     - needs to have all of the updated 
 
 - check_price() should tell whether the price went up or down
 
-- bs4 parsing test cases to ensure they UPDATE and don't add on
+- /\ bs4 parsing test cases to ensure they UPDATE and don't add on
 
-test cases
+- /\ only add link to items.csv
 
-get_row(): returns the row number for the specific desc
+- /\ switch cases for check_price():
+    - 1: if exist = false -> append
+    - 2: if exist = true, better price -> update
+    - 3: list is not empty, no better price -> don't do anything.
 
-create_ID(): if new item, creates an ID
+- /\ test cases
 
-organizing prices via price_list is unsustainable.
+- /\ get_row(): returns the row number for the specific desc
+
+- /\ create_ID(): if new item, creates an ID
+
+- /\ organizing prices via price_list is unsustainable.
     - will need to sort by ID's

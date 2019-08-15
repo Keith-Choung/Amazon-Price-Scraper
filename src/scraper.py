@@ -19,7 +19,7 @@ headers = {
     "User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
 
 def get_info(ID):
-    csv_file = csv.reader(open('data/items.csv', 'r'), delimiter=",")
+    csv_file = csv.reader(open('items.csv', 'r'), delimiter=",")
     next(csv_file) # skips header
     i = 0
     target = ""
@@ -69,7 +69,7 @@ def check_price(ID, new_price):
     i = 0
     p = 0
     exist = False
-    with open('data/site_data.csv', mode='r') as csvfile:
+    with open('site_data.csv', mode='r') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         next(readCSV)
         for row in readCSV:
@@ -91,7 +91,7 @@ def store_data(ID, Desc, Price, Date):
     print("store_data\n")
 
     # append
-    with open('data/site_data.csv', mode='a+') as csvfile:
+    with open('site_data.csv', mode='a+') as csvfile:
         item_data = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_ALL)
         item_data.writerow([ID, Desc, Price, Date])
@@ -105,7 +105,7 @@ def update_data(ID, Desc, Price, Date):
     print("update_data\n")
 
     tempfile = NamedTemporaryFile(mode='w', delete=False)
-    filename = 'data/site_data.csv'
+    filename = 'site_data.csv'
     header = ["ID", "Desc", "Price", "Date"]
 
     with open(filename, 'r') as csvfile, tempfile:
@@ -124,7 +124,7 @@ def update_data(ID, Desc, Price, Date):
             row = {'ID': row['ID'], 'Desc': row['Desc'], 'Price': row['Price'], 'Date': row['Date']}
             writer.writerow(row)
 
-    shutil.move(tempfile.name, 'data/site_data.csv')
+    shutil.move(tempfile.name, 'site_data.csv')
     
 
 def send_mail(link):
@@ -153,8 +153,8 @@ def send_mail(link):
     server.quit()
 
 def main():
-    csv_file = csv.reader(open('data/items.csv', 'r'), delimiter=',')
-    total = organize.total_rows('data/items.csv')
+    csv_file = csv.reader(open('items.csv', 'r'), delimiter=',')
+    total = organize.total_rows('items.csv')
     next(csv_file)
     for row in csv_file:
 

@@ -31,3 +31,13 @@
 - Today I learned:
     - you can update a csv row by inputting it with column:value pairs in a dictionary
     - to PROPERLY update a csv file, you create a tempfile and then move it to that file's destination destination... but does it keep the name?
+    - how to create a .gitignore folder and use it for remnants of vscode/pycache. wondering how to take out __pycache__ since it doesn't have an extensions.
+
+8/15/2019
+- finished add/remove, but now have to work on update_IDs since I want the ID's to be sorted and continuous/consecutive (1,2,3,4...).
+- feel like I'm almost done with this project. Just need to be make it terminal friendly so it can be used there.
+
+- Today I learned:
+    - how to properly use the csv.DictReader/Writer by trying to "update" the ID columns in both the site_data.csv and items.csv files
+    - using git on vs code helped me since I couldn't save changes to local unless I committed them.
+    

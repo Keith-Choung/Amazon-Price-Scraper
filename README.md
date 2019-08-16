@@ -26,7 +26,7 @@ store_data: Desc, Price, Date
     2) adds if the Desc does not exist yet
     returns bool
 
-    
+
 TODO:
 - /\ add ID column & create ID -> index translator map?
 
@@ -36,13 +36,13 @@ TODO:
 - check_link: checks if link is valid
     - if not, return false and cancel add_link
 
-- remove_data: if url returns nothing or DNE anymore
+- /\ remove_data: if url returns nothing or DNE anymore
     - should remove from both 'items.csv' and 'site_data.csv'
 
 - send_mail() should be called last
     - needs to have all of the updated 
 
-- check_price() should tell whether the price went up or down
+- /\ check_price() should tell whether the price went up or down
 
 - /\ bs4 parsing test cases to ensure they UPDATE and don't add on
 

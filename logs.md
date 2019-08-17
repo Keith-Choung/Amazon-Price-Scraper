@@ -41,3 +41,11 @@
     - how to properly use the csv.DictReader/Writer by trying to "update" the ID columns in both the site_data.csv and items.csv files
     - using git on vs code helped me since I couldn't save changes to local unless I committed them.
     
+8/16/2019
+- finished update_IDs
+- now onto the testing phase
+    - I need more test csv files to test the functions in organize.py and scraper.py and also need a better name for organize.py
+- after testing, should make this usable in terminal, probably done by tomorrow.
+
+- Today I learned:
+    - not really much today. just a little debugging. 

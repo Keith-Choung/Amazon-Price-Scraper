@@ -54,7 +54,7 @@ def get_row(ID: int) -> int:
         return row_number
 
 
-def add_link(link: str):
+def add_link(url: str):
     print("add_link\n")
 
     # ? check if link is valid?
@@ -66,16 +66,16 @@ def add_link(link: str):
     with open(filename, 'a+') as csvfile:
         item_data = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_ALL)
-        
-        item_data.writerow([ID, link])
-    print("added link to items.csv\n")
+        item_data.writerow([ID, url])
+    print("added url to items.csv\n")
 
 def remove_link(ID: int):
     print("remove_link\n")
 
+    found = False
     tempfile1 = NamedTemporaryFile(mode='w', delete=False)
     filename_items = 'data/test_items.csv'
-    header_items = ["ID","Price"]
+    header_items = ["ID","URL"]
     filename_site = 'data/test_site.csv'
     header_site = ["ID", "Desc", "Price", "Date"]
 
@@ -90,7 +90,12 @@ def remove_link(ID: int):
 
         for row in reader:
             if int(row[0]) != ID:
+                found = True
                 writer.writerow(row)
+
+    if (not found):
+        print("ID not found.")
+        return
 
     shutil.move(tempfile1.name, filename_items)
 
@@ -115,7 +120,7 @@ def update_IDs(filename: str):
     
     tempfile1 = NamedTemporaryFile(mode='w', delete=False)
     filename_items = 'data/test_items.csv'
-    header_items = ["ID","Link"]
+    header_items = ["ID","URL"]
     # filename_site = 'data/test_site.csv'
     # header_site = ["ID", "Desc", "Price", "Date"]
 
@@ -125,25 +130,30 @@ def update_IDs(filename: str):
         writer = csv.DictWriter(tempfile1, fieldnames=header_items,delimiter=',',
             quotechar='"', quoting=csv.QUOTE_ALL)
 
-        next(reader)
-        writer.writerow({'ID': "ID", 'Link': "Link"})
+        # next(reader)
+        writer.writerow({'ID': "ID", 'URL': "URL"})
 
         id_count = 1
         prev = 0
         for row in reader:
-            if int(row["ID"]) != id_count:
-                row["ID"], row["Link"] = prev+1, row["Link"]
-                row = {"ID": row["ID"], "Link": row["Link"]}
-                prev = int(row["ID"]) # * store previous value
+            ID = int(row["ID"])
+
+            if ID != id_count:
+                print("if.. ID:", ID)
+                row["ID"], row["URL"] = prev+1, row["URL"]
+                row = {"ID": row["ID"], "URL": row["URL"]}
                 writer.writerow(row)
             else:
-                row["ID"], row["Link"] = row["ID"], row["Link"]
-                row = {"ID": row["ID"], "Link": row["Link"]}
+                print("else.. ID:", ID)
+                row["ID"], row["URL"] = row["ID"], row["URL"]
+                row = {"ID": row["ID"], "URL": row["URL"]}
                 writer.writerow(row)
-    
+            prev = int(row["ID"]) # * store previous value
+            id_count += 1
     
     shutil.move(tempfile1.name, filename_items)
 
 # add_link("https://www.amazon.com/Kodiak-Canvas-Flex-Bow-Deluxe-8-Person/dp/B001NZWQ1C/ref=sxin_2_osp20-bc4034b6_cov?ascsubtag=bc4034b6-8da9-4a1c-89a9-40f92ed4dcf3&creativeASIN=B001NZWQ1C&cv_ct_id=amzn1.osp.bc4034b6-8da9-4a1c-89a9-40f92ed4dcf3&cv_ct_pg=search&cv_ct_wn=osp-search&keywords=tent&linkCode=oas&pd_rd_i=B001NZWQ1C&pd_rd_r=cf5e6cc5-3250-4f56-a8cb-62195d8ab181&pd_rd_w=c3a2L&pd_rd_wg=i8fMf&pf_rd_p=43ba9e17-96f5-4491-b054-e546013f7dc4&pf_rd_r=BQ3ZK0ZX5XBBWS9YR2TN&qid=1565832053&s=electronics&tag=bestcont06-20")
-remove_link(3)
+# remove_link(3)
+
 update_IDs('items.csv')

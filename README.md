@@ -1,63 +1,20 @@
-# WebScraper
-scrapes sites for price drops
+# Amazon Price Checker
+This program's goal is to take in an Amazon URL and check that item's price by storing user input and the scraped data in two separate csv files
 
-NOTES:
+Please feel free to contribute to this as it is my very first project :)
 
-get_info -> check_price -> store_data & send_mail || do nothing
+There is no installation process yet as it is not finished.
 
-get_rows:
-    gets the total number of rows in the csv file
+Steps to Use:
+- scraper.py is the scraper that will scrape, compare and store the data if necessary
+- organize.py has the accessory funcitons to be able to use in an interactive way like addURL, removeURL, and more.
 
-get_info: 
-    gets all information needed for an item, from the items.csv
-        - input is row index that needs to be read in.
-    return title, short_desc, converted_price
+Requirements:
+- Python 3.4+
+- Terminal
 
-send_mail:
-    sends the mail for a specific item
-    return bool
-
-check_price:
-    reads the csv file and stores all of the prices in a list
-    returns bool
-
-store_data: Desc, Price, Date
-    1) overwrites if check_price is true
-    2) adds if the Desc does not exist yet
-    returns bool
-
-
-TODO:
-- /\ add ID column & create ID -> index translator map?
-
-- add_link: returns boolean
-    - calls create_ID()
-
-- check_link: checks if link is valid
-    - if not, return false and cancel add_link
-
-- /\ remove_data: if url returns nothing or DNE anymore
-    - should remove from both 'items.csv' and 'site_data.csv'
-
-- send_mail() should be called last
-    - needs to have all of the updated 
-
-- /\ check_price() should tell whether the price went up or down
-
-- /\ bs4 parsing test cases to ensure they UPDATE and don't add on
-
-- /\ only add link to items.csv
-
-- /\ switch cases for check_price():
-    - 1: if exist = false -> append
-    - 2: if exist = true, better price -> update
-    - 3: list is not empty, no better price -> don't do anything.
-
-- /\ test cases
-
-- /\ get_row(): returns the row number for the specific desc
-
-- /\ create_ID(): if new item, creates an ID
-
-- /\ organizing prices via price_list is unsustainable.
-    - will need to sort by ID's
+ToDo List:
+- Allow interactive usage, either through terminal or GUI (Tkinter?)
+- Implement email/text function through SMTP to notify user of updated prices
+- Add more test CSV data
+- Determine what input removeURL should take

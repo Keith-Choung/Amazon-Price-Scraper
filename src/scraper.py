@@ -1,28 +1,33 @@
-
-# ! ALERT
-# * FUNCTION
-# ? QUESTION
-# COMMENT
-
+from tempfile import NamedTemporaryFile
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+
 import requests
 import datetime
-import csv
-from tempfile import NamedTemporaryFile
 import shutil
+import csv
 
-
+# to be sent to in requests
 headers = {
-    "User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36'}
+    """
+    User-Agent": 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5)
+    AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 
+    Safari/537.36
+    """
+    }
 
-def getInfo(ID):
-    csv_file = csv.reader(open('data/items.csv', 'r'), delimiter=",")
-    next(csv_file) # skips header
+
+'''
+getData: takes in an ID and returns data of that ID 
+'''
+def getData(ID: int) -> (str, str, float, str):
+    CSVFile = csv.reader(open('data/items.csv', 'r'), delimiter=",")
+    next(CSVFile) # skips header
+
     i = 0
     target = ""
 
-    for row in csv_file:
+    for row in CSVFile:
         if(ID == int(row[0])):
             target = row
             break
@@ -37,7 +42,7 @@ def getInfo(ID):
     # Parse everything for us
     soup = BeautifulSoup(page.content, 'lxml')
 
-    #! Need to specify tags AND attributes for bs4 to find()
+    # incase scraping first time doesnt work
     if soup.find("span", {"id": "productTitle"}) == None:
         unstripped_title = soup.find("h1", {"id": "title"}).get_text()
     else:
@@ -59,55 +64,80 @@ def getInfo(ID):
 
     return unstripped_title, short_desc, converted_price, date_str
 
-
+'''
+totalRows: takes in filename argument and 
+           returns the row count of the file
+'''
 def totalRows(filename: str) -> int:
-    with open('data/items.csv', 'r') as csv_file:
-        readCSV = csv.reader(csv_file, delimiter=",")
-    # csv_file = csv.reader(open(filename, 'r'), delimiter=",")
+    with open('data/items.csv', 'r') as CSVFile:
+        readCSV = csv.reader(CSVFile, delimiter=",")
         next(readCSV)
-        row_count = sum(1 for row in readCSV) # * sf: sum is more efficient
+
+        # sof: sum is more efficient
+        row_count = sum(1 for row in readCSV)
+
     return row_count
 
 
-# * checkPrice: takes in origPrice and index and compares with new price w that index's value
-def checkPrice(ID, new_price):
+'''
+checkPrice: searches for original price and
+            compares it to the new price
+'''
+def checkPrice(ID: int, newPrice: float) -> int:
     print("checkPrice\n")
+
     orig = []
     i = 0
     p = 0
     exist = False
+
     with open('data/site_data.csv', mode='r') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         next(readCSV)
+
+        # checks for ID
         for row in readCSV:
             if (int(row[0]) == ID):
                 exist = True
                 orig = row
-    print("ID:", ID)
+                storedPrice = float(orig[2])
+
+    # ID doesnt exist
     if not exist:
         print("checkPrice returned: DNE\n")
         return 1
-    elif (exist and float(orig[2]) > new_price):
+
+    # ID exists && new price is cheaper
+    elif (exist & storedPrice > newPrice):
         print("checkPrice returned: UPDATE\n")
         return 2
+
+    # ID exists but price didn't decrease
     print("checkPrice returned: N/A\n")
     return 3
 
 
-# * storeData: reads in data and stores it into csv file. checks if data is new and updates
-def storeData(ID, Desc, Price, Date):
+'''
+storeData: reads in data and stores it into csv file. 
+'''
+def storeData(ID: int, Desc: str, Price: float, Date: str):
     with open('data/site_data.csv', mode='a+') as csvfile:
         item_data = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_ALL)
         item_data.writerow([ID, Desc, Price, Date])
+
         print("STORED DATA")
     
 
-# * updateData: updates the ID's to be continuous (1, 2, 3, ...)
-def updateData(ID, Desc, Price, Date):
+'''
+updateData: updates the ID's to be contiguous (1, 2, 3, ...)
+'''
+def updateData(ID: int, Desc: str, Price: float, Date: str):
+    
     tempfile = NamedTemporaryFile(mode='w', delete=False)
     filename = 'data/site_data.csv'
     header = ["ID", "Desc", "Price", "Date"]
+    headerDict = {'ID': "ID", 'Desc': "Description", 'Price': "Price", 'Date': "Date"}
 
     with open(filename, 'r') as csvfile, tempfile:
         reader = csv.DictReader(csvfile, fieldnames=header)
@@ -115,27 +145,34 @@ def updateData(ID, Desc, Price, Date):
             quotechar='"', quoting=csv.QUOTE_ALL)
         next(reader)
 
-        # print the header
-        writer.writerow({'ID': "ID", 'Desc': "Description", 'Price': "Price", 'Date': "Date"})
+        # add categories to first row of csv file
+        writer.writerow(headerDict)
         
+        # add in each row | if row ID matches given ID, update with new data
         for row in reader:
+
             if int(row['ID']) == ID:
-                # print("updating row:", row[ID])
                 row['Desc'], row['Price'], row['Date'] = Desc, Price, Date
-            row = {'ID': row['ID'], 'Desc': row['Desc'], 'Price': row['Price'], 'Date': row['Date']}
+
+            row = {'ID': row['ID'], 'Desc': row['Desc'], 'Price': row['Price'], 'Date': row['Date']}    
             writer.writerow(row)
 
     shutil.move(tempfile.name, 'data/site_data.csv')
 
 
 def main():
-    csv_file = csv.reader(open('data/items.csv', 'r'), delimiter=',')
+
+    # read in CSV to parse
+    CSVFile = csv.reader(open('data/items.csv', 'r'), delimiter=',')
     total = totalRows('data/items.csv')
-    next(csv_file)
-    for row in csv_file:
+
+    # skip categories (first row)
+    next(CSVFile)
+
+    for row in CSVFile:
 
         ID = int(row[0])
-        title, short_desc, converted_price, date_str = getInfo(ID)
+        title, short_desc, converted_price, date_str = getData(ID)
         switch_case_value = checkPrice(ID, converted_price)
 
         # * -> append
@@ -151,6 +188,7 @@ def main():
             break
     
     print("EXIT\n")
+
 
 if __name__ == '__main__':
     main()

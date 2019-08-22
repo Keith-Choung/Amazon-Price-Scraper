@@ -1,22 +1,30 @@
+from tempfile import NamedTemporaryFile
+
 import csv
 import smtplib  # simple mail protocol
-from tempfile import NamedTemporaryFile
 import shutil
 
+'''
+totalRows: takes in filename argument and 
+           returns the row count of the file
+'''
 def totalRows(filename: str) -> int:
     with open('data/items.csv', 'r') as csv_file:
         readCSV = csv.reader(csv_file, delimiter=",")
-    # csv_file = csv.reader(open(filename, 'r'), delimiter=",")
         next(readCSV)
         row_count = sum(1 for row in readCSV) # * sf: sum is more efficient
     return row_count
 
+'''
+checkIDs: checks if the target ID is in any of the files
+'''
+def checkIDs(id: int, filename: str) -> bool:
 
-def checkIDs(id: int, filename) -> bool:
+    site_data_cols = ["ID","Description","Price","Date"]
+    items_cols = ["ID","Description","URL"]
+
     with open(filename, 'r') as csv_file:
         readCSV = csv.reader(csv_file, delimiter=",")
-        site_data_cols = ["ID","Description","Price","Date"]
-        items_cols = ["ID","Description","URL"]
         ids = []
         for row in readCSV:
             if row == site_data_cols or row == items_cols:

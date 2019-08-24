@@ -18,3 +18,4 @@ ToDo List:
 - Implement email/text function through SMTP to notify user of updated prices
 - Add more test CSV data
 - Determine what input removeURL should take
+- Create a rotating User Agent function to prevent scrape blocking

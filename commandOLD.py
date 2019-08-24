@@ -123,14 +123,14 @@ def removeURL(ID: int):
     shutil.move(tempfile2.name, filename_site)
 
 
-def updateIDs(filename: str):
+def resetIDs(filename: str):
     print("updating IDs\n")
     
     tempfile1 = NamedTemporaryFile(mode='w', delete=False)
     tempfile2 = NamedTemporaryFile(mode='w', delete=False)
-    filename_items = 'data/test_items.csv'
+    filename_items = 'data/items.csv'
     header_items = ["ID","URL"]
-    filename_site = 'data/test_site.csv'
+    filename_site = 'data/site_data.csv'
     header_site = ["ID", "Desc", "Price", "Date"]
 
     with open(filename_items, 'r+') as items, tempfile1:
@@ -183,6 +183,7 @@ def updateIDs(filename: str):
                 writer.writerow(row)
             else:
                 print("else.. ID:", ID)
+                print(row["Desc"])
                 row["ID"], row["Desc"], row["Price"], row["Date"] = row["ID"], row["Desc"], row["Price"], row["Date"]
                 row = {"ID": row["ID"], "Desc": row["Desc"], "Price":row["Price"], "Date":row["Date"]}
                 writer.writerow(row)
@@ -217,3 +218,5 @@ def sendMail(link):
     print("email has been sent")
 
     server.quit()
+
+resetIDs('data/items.csv')

@@ -55,7 +55,22 @@
 - Today I learned:
     - you cannot improt python files from another folder. you can use the sys module to access your local files and locate it in real time
 
+8/22/2019
+- starting to make it all encapsulated for organization purposes and OOP-esque in scraper.py
+- added a rotating user agent function that dispenses random UAs so websites cannot block the scraping
+    - took this from: "https://dev.to/kaelscion/bye-bye-403---building-a-filter-resistant-web-crawler-part-iii-user-agents-3453"
+    - do need to add a time/duration buffer so I don't 'harass' the site
 
+- Today I Learned:
+    - how to re-learn OOP and implementing it to organize the program.
+
+8/23/2019
+- allowed importing of python files
+- reorganized more
+
+
+- Today I Learned: 
+    - how import python files to use
 
 --------------------------------------------
 Initial Notes:

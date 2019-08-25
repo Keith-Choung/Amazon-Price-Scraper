@@ -7,50 +7,78 @@ import importlib
 import commands as com
 import scraper as scrap
 
-class ScrapyButtons:
-
-    def __init__(self, master):
-        frame = Frame(master)
-        frame.grid()
-
-        titleLable = Label(frame, text="Scra.py", bg="red", fg="white")
-        titleLable.grid()
-
-        bottomFrame = Frame()
-        bottomFrame.grid(sticky=S)
-
-        # self.printButton = Button(bottomFrame, text="Print Message", command=self.printMessage)
-        # self.printButton.grid()
-        # * quit breaks the mainloop
-        self.quitButton = Button(bottomFrame, text="Quit", command=frame.quit) 
-        self.quitButton.grid()
-
-        self.addButton = Button(frame, text="Add", fg="red", command=self.printMessage)
-        self.removeButton = Button(frame, text="Remove", fg="purple", )
-        self.refreshButton = Button(frame, text="Refresh", bg = "purple", fg="green")
-
-        # * grid them in to display them
-        self.addButton.grid(row=1, sticky=E)
-
-        self.urlLabel = Label(master, text="URL:")
-        self.urlEntry = Entry(master)
-        self.urlLabel.grid(row=3)
-        self.urlEntry.grid(row=3, sticky=E)
-
-        self.removeButton.grid()
-        self.refreshButton.grid()
-
-
-    def printMessage(self):
-        print("Wow it works")
-
-
-
-
 root = Tk() # * creates the blank window
-canvas = Canvas(root, width=250, height=50)
-canvas.grid()
-scrapy = ScrapyButtons(root)
+
+c = com.Commands()
+
+def printMessage():
+    print("Wow it works")
+
+def isInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def checkURL():
+    print("Checking URL")
+    # Some Regex Function
+
+def addURL():
+    inputValue=urlEntry.get()
+    c.addURL(inputValue)
+    print("Added Item")
+
+def removeID():
+    inputValue=IDEntry.get()
+
+    # if the input value is an int and the ID is in files -> Remove
+    if isInt(inputValue):
+        if c.checkIDs(int(inputValue)):
+            c.removeItem(int(inputValue))
+            print("Removed Item")
+    else:
+        print("Invalid Input")
+
+# Title
+titleLable = Label(root, text="Amazon Price Scraper", bg="grey", fg="white")
+titleLable.grid(row=1, column=2)
+
+# URL Entry/Label
+urlLabel = Label(root, text="URL:")
+urlLabel.grid(row=3, column=1, sticky=E)
+
+urlEntry = Entry(root)
+urlEntry.grid(row=3, column=2, sticky=E)
+
+# Add URL | command=lambda -> do this
+addButton = Button(root, text="Add", fg="red", command=lambda: addURL())
+addButton.grid(row=3, column=3)
+
+# ID Entry/Label
+IDLabel = Label(root, text="ID:")
+IDLabel.grid(row=4, column=1, sticky=E)
+
+IDEntry = Entry(root)
+IDEntry.grid(row=4, column=2, sticky=E)
+
+# Remove ID
+removeButton = Button(root, text="Remove", fg="purple", command=lambda: removeID())
+removeButton.grid(row=4, column=3)
+
+# Scrape
+scrapeButton = Button(root, text="Scrape", fg="orange", command=lambda: scrap.main())
+scrapeButton.grid(row=5, column=1)
+
+# Refresh CSV File
+refreshButton = Button(root, text="Refresh", fg="green", command=lambda: c.resetIDs())
+refreshButton.grid(row=5, column=2)
+
+# Quit
+quitButton = Button(root, text="Quit", command=root.quit) 
+quitButton.grid(row=5, column=3)
+
 root.mainloop()
 
 # def printName():

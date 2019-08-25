@@ -92,11 +92,7 @@ class Scraper:
                 compares it to the new price
     '''
     def checkPrice(self, newPrice: float) -> int:
-        print("checkPrice\n")
-
         orig = []
-        i = 0
-        p = 0
         exist = False
 
         with open('data/site_data.csv', mode='r') as csvfile:
@@ -201,24 +197,6 @@ class Files:
         return self.rowCount
 
     '''
-    checkIDs: checks if the target ID is in any of the files
-    '''
-    def checkIDs(self, id: int) -> bool:
-
-        site_data_cols = ["ID","Description","Price","Date"]
-        items_cols = ["ID","Description","URL"]
-
-        with open(filename, 'r') as CSVFile:
-            readCSV = csv.reader(CSVFile, delimiter=",")
-            ids = []
-            for row in readCSV:
-                if row == site_data_cols or row == items_cols:
-                    continue
-                elif id == int(row[0]):
-                    return True
-            return False
-
-    '''
     getIDs: gets the list of IDs in file
     '''
     def getIDs(self)-> list:
@@ -253,79 +231,6 @@ class Files:
                 else:
                     row_number += 1
             return row_number
-
-    '''
-    resetIDs: resets IDs in files to be contiguous (1, 2, 3 ...)
-    '''
-    def resetIDs(self):
-        print("updating IDs\n")
-        
-        tempfile1 = NamedTemporaryFile(mode='w', delete=False)
-        tempfile2 = NamedTemporaryFile(mode='w', delete=False)
-        filename_items = 'data/items.csv'
-        header_items = ["ID","URL"]
-        filename_site = 'data/site_data.csv'
-        header_site = ["ID", "Desc", "Price", "Date"]
-
-        with open(filename_items, 'r+') as items, tempfile1:
-            print("updating items")
-            reader = csv.DictReader(items)
-            writer = csv.DictWriter(tempfile1, fieldnames=header_items,delimiter=',',
-                quotechar='"', quoting=csv.QUOTE_ALL)
-
-            # next(reader)
-            writer.writerow({'ID': "ID", 'URL': "URL"})
-
-            id_count = 1
-            prev = 0
-            for row in reader:
-                ID = int(row["ID"])
-
-                if ID != id_count:
-                    print("if.. ID:", ID)
-                    row["ID"], row["URL"] = prev+1, row["URL"]
-                    row = {"ID": row["ID"], "URL": row["URL"]}
-                    writer.writerow(row)
-                else:
-                    print("else.. ID:", ID)
-                    row["ID"], row["URL"] = row["ID"], row["URL"]
-                    row = {"ID": row["ID"], "URL": row["URL"]}
-                    writer.writerow(row)
-                prev = int(row["ID"]) # * store previous value
-                id_count += 1
-        
-        shutil.move(tempfile1.name, filename_items)
-
-        with open(filename_site, 'r+') as site, tempfile2:
-            print("updating site")
-            reader = csv.DictReader(site)
-            writer = csv.DictWriter(tempfile2, fieldnames=header_site,delimiter=',',
-                quotechar='"', quoting=csv.QUOTE_ALL)
-
-            # next(reader)
-            writer.writerow({'ID': "ID", 'Desc': "Desc", 'Price': "Price", 'Date': "Date"})
-
-            id_count = 1
-            prev = 0
-            for row in reader:
-                ID = int(row["ID"])
-
-                if ID != id_count:
-                    print("if.. ID:", ID)
-                    row["ID"], row["Desc"], row["Price"], row["Date"] = prev+1, row["Desc"], row["Price"], row["Date"]
-                    row = {"ID": row["ID"], "Desc": row["Desc"], "Price":row["Price"], "Date":row["Date"]}
-                    writer.writerow(row)
-
-                else:
-                    print("else.. ID:", ID)
-                    print(row["Desc"])
-                    row["ID"], row["Desc"], row["Price"], row["Date"] = row["ID"], row["Desc"], row["Price"], row["Date"]
-                    row = {"ID": row["ID"], "Desc": row["Desc"], "Price":row["Price"], "Date":row["Date"]}
-                    writer.writerow(row)
-                prev = int(row["ID"]) # * store previous value
-                id_count += 1
-        
-        shutil.move(tempfile2.name, filename_site)
 
     '''
     changeFile: changes path of file

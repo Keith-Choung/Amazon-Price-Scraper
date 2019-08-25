@@ -6,16 +6,23 @@ Please feel free to contribute to this as it is my very first project :)
 There is no installation process yet as it is not finished.
 
 Steps to Use:
-- scraper.py is the scraper that will scrape, compare and store the data if necessary
-- organize.py has the accessory funcitons to be able to use in an interactive way like addURL, removeURL, and more.
+- launch the GUI by typing "python3 src/mainGUI.py" in the Amazon Price Scraper directory
+- Copy & paste a URL into the text box and press "Add"
+- Press "Scrape" for the program to scrape for the data
+- To remove an item, get the ID of the item and put it in the "Remove:" text box, then press "Remove"
+- Press "Refresh" after removing an item to reset the IDs to be contiguous (1, 2, 3, ..)
 
 Requirements:
 - Python 3.4+
 - Terminal
+- Install BeautifulSoup
 
 ToDo List:
-- Allow interactive usage, either through terminal or GUI (Tkinter?)
-- Implement email/text function through SMTP to notify user of updated prices
-- Add more test CSV data
-- Determine what input removeURL should take
-- Create a rotating User Agent function to prevent scrape blocking
+- Implement email/text function through SMTP to notify user of updated prices 
+- Simplify usage
+    - Remove should be coupled with refresh
+    - Scrape should happen to the URL that was added, instead of scraping the whole file after adding one URL
+
+- Allow interactive usage, either through terminal or GUI (Tkinter?) *DONE
+- Determine what input removeURL should take *DONE
+- Create a rotating User Agent function to prevent scrape blocking *DONE

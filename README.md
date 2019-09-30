@@ -20,9 +20,13 @@ Requirements:
 ToDo List:
 - Implement email/text function through SMTP to notify user of updated prices 
 - Simplify usage
-    - Remove should be coupled with refresh
+    - Create UNDO Button
     - Scrape should happen to the URL that was added, instead of scraping the whole file after adding one URL
+        - Scrape Most Recents Button
 
+- Need to catch max redirect error and continue looping *DONE
+- Remove should be coupled with refresh *DONE
+- Near 100% request success with Sessions *DONE
 - Allow interactive usage, either through terminal or GUI (Tkinter?) *DONE
 - Determine what input removeURL should take *DONE
 - Create a rotating User Agent function to prevent scrape blocking *DONE

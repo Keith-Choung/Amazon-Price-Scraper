@@ -70,6 +70,7 @@ class Commands:
                     writer.writerow(row)
             
         shutil.move(tempfile2.name, filename_site)
+        self.resetIDs()
 
     '''
     resetIDs: resets IDs in files to be contiguous (1, 2, 3 ...)

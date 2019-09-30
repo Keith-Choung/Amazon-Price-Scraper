@@ -1,7 +1,10 @@
 from tempfile import NamedTemporaryFile
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
+from lxml.html import fromstring
+from itertools import cycle
 
+import traceback
 import requests
 import datetime
 import random
@@ -10,7 +13,7 @@ import time
 import csv
 
 # found online | rotates use of user agent to prevent website scraping blockage
-class UserAgent:
+class Anon:
 
     UAsourceURL='https://deviceatlas.com/blog/list-of-user-agent-strings#desktop'
 
@@ -23,6 +26,25 @@ class UserAgent:
         tables = soup.find_all('table')
         return [table.find('td').text for table in tables]
 
+    def getProxies(self):
+        url = 'https://free-proxy-list.net/'
+        response = requests.get(url)
+        parser = fromstring(response.text)
+        proxies = set()
+        for i in parser.xpath('//tbody/tr')[:10]:
+            if i.xpath('.//td[7][contains(text(),"yes")]'):
+                proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
+                proxies.add(proxy)
+        return proxies
+
+    def chooseProxy(self):
+        proxies = self.getProxies()
+        url = 'https://stackoverflow.com/questions/23013220/max-retries-exceeded-with-url-in-requests'
+        proxyList = list(proxies)
+
+        proxy = random.choice(proxyList)
+
+        return proxy
 
 class Scraper:
 
@@ -48,14 +70,22 @@ class Scraper:
         # incase scraping first time doesnt work
         while not found:
             # get a User Agent
-            userAgent = UserAgent().newUA
-            print(userAgent)
+            userAgent = Anon().newUA
+            # proxy = Anon().chooseProxy
             headers = {"User-Agent" : userAgent}
 
             # need to take out the quotes in the string
             URL = target[1].replace('\"', '')
-            page = requests.get(URL, headers=headers)
-        
+
+            # Create a Session to store cookies
+            sess = requests.Session()
+            sess.headers = headers
+            try:
+                page = sess.get(URL)
+            except:
+                print("Request failure.\n")
+                continue
+
             # Parse everything for us
             soup = BeautifulSoup(page.content, 'lxml')
             unstripTitle = soup.find("span", {"id": "productTitle"})
@@ -67,8 +97,8 @@ class Scraper:
 
             # pause to be friendly toward the server :)
             else:
-                print("resting...")
-                time.sleep(2)
+                print("resting...\n")
+                time.sleep(5)
                 continue
 
         # Make short description to store
@@ -83,7 +113,7 @@ class Scraper:
         date = datetime.date.today()
         dateStr = "{}/{}/{}".format(date.month, date.day, date.year)
 
-        print("GOT DATA")
+        print("GOT DATA\n")
 
         return shortDesc, convPrice, dateStr
 
@@ -101,7 +131,13 @@ class Scraper:
 
             # checks for ID
             for row in readCSV:
-                if (self.ID == int(row[0])):
+
+                # If row is None
+                if not row:
+                    break
+
+                
+                elif (self.ID == int(row[0])):
                     exist = True
                     orig = row
                     storedPrice = float(orig[2])
@@ -146,7 +182,7 @@ class DataHandler:
                                 quotechar='"', quoting=csv.QUOTE_ALL)
             item_data.writerow([self.ID, self.Desc, self.Price, self.Date])
 
-            print("STORED DATA")
+            print("STORED DATA\n")
 
     '''
     updateData: updates the row that had a price decrease
@@ -174,7 +210,7 @@ class DataHandler:
                 writer.writerow(row)
 
         shutil.move(tempfile.name, 'data/site_data.csv')
-        print("UPDATED DATA")
+        print("UPDATED DATA\n")
 
 class Files:
 
@@ -253,6 +289,10 @@ def main():
         ID = int(row[0])
         Scrap = Scraper(ID)
         shortDesc, convPrice, dateStr = Scrap.getData()
+
+        print(shortDesc, convPrice, dateStr)
+        print("")
+
         switch_case_value = Scrap.checkPrice(convPrice)
 
         Data = DataHandler(ID, shortDesc, convPrice, dateStr)
@@ -265,13 +305,13 @@ def main():
             Data.updateData()
         # * -> continue
         else:
-            print("resting...")
+            print("resting...\n")
             time.sleep(1)
             continue
         if(ID == total):
             break
         
-        print("resting...")
+        print("resting...\n")
         time.sleep(1)
     
     print("EXIT\n")
@@ -279,3 +319,13 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# a = Anon()
+# print(a.getProxies())
+# print(a.chooseProxy())
+# url = "https://www.amazon.com/AmazonBasics-Dual-Port-USB-Wall-Charger/dp/B0773BHCVD/ref=sxts_srecs_srch_pb_sims?crid=QPRW9LDLRACJ&keywords=amazonbasics&pd_rd_i=B0773BHCVD&pd_rd_r=845be779-af66-44f4-b9f8-7df92aa514aa&pd_rd_w=6SFEX&pd_rd_wg=UT6KL&pf_rd_p=c9185cf0-afb7-43e4-87cf-1b328fd08c73&pf_rd_r=89BCV51E6XM1S4P8VQJB&qid=1566766683&s=electronics&sprefix=amazon%2Celectronics%2C299"
+
+# s = requests.Session()
+# s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36'
+# r = s.get(url)
+# print(r)
